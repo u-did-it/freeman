@@ -95,3 +95,10 @@ _This file is auto-imported by CLAUDE.md. Log every significant architectural de
 ## DD-012 — Collections shared across all users
 **Decision:** Collections (and the requests/folders/variables inside them) are visible and editable by every authenticated user. The `user_id` column on `collections` and `requests` is retained as an audit "created_by" field but is not used for access control.
 **Reason:** Teams working on the same instance need to collaborate on the same API collections. Per-user isolation made sense for personal tooling but is a blocker for team use. Environments and request history remain per-user (personal state).
+
+---
+
+## DD-015 — Tab bar right-click context menu with batched unsaved-changes warning
+**Decision:** Right-clicking a request tab opens a context menu (Close, Close Others, Close to the Right, Close to the Left, Close All) styled to match the existing user/env dropdown menus (`workspace/topbar.blade.php`). Items that would be a no-op (e.g. "Close to the Right" on the last tab) are greyed out. Bulk-close actions that would close one or more dirty tabs show a single batched `window.confirm()` ("N tab(s) have unsaved changes...") rather than one confirm per tab.
+**Reason:** Matches the VS Code/Postman tab convention users expect. A single batched confirm keeps the existing lightweight `window.confirm()` pattern (already used for single-tab close) consistent instead of introducing a new custom modal component just for multi-tab warnings.
+**Implementation:** `removeTabs()` batch-removal added to `Alpine.store('workspace')` (`public/js/freeman-store.js`); `_closeTabs()` helper + `openTabContextMenu`/`closeTabContextMenu` state added to `workspaceShell` (`public/js/freeman-shell.js`); menu markup in `resources/views/workspace.blade.php`. This is the first `@contextmenu` usage in the codebase.

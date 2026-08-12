@@ -9,6 +9,7 @@ document.addEventListener('alpine:init', () => {
         sidebarTab:  'collections',
         userMenuOpen: false,
         envMenuOpen:  false,
+        contextMenu: { open: false, x: 0, y: 0, tabId: null },
 
         // ── Store proxies (keep templates in workspace.blade.php unchanged) ─
         get tabs()              { return Alpine.store('workspace').tabs; },
@@ -25,22 +26,69 @@ document.addEventListener('alpine:init', () => {
         switchTab(id)    { Alpine.store('workspace').switchTab(id); },
         methodColor(m)   { return methodColor(m); },
 
-        closeTab(tabId) {
-            const tab = Alpine.store('workspace').tabs.find(t => t.id === tabId);
-            if (!tab) return;
-            if (tab.isDirty && !confirm('This tab has unsaved changes. Close anyway?')) return;
+        _closeTabs(tabIds) {
+            const store   = Alpine.store('workspace');
+            const targets = store.tabs.filter(t => tabIds.includes(t.id));
+            if (!targets.length) return;
 
-            // Clean up file input map
-            if (window.__fileInputMap) {
-                Object.keys(window.__fileInputMap)
-                    .filter(k => k.startsWith(tabId + '_'))
-                    .forEach(k => delete window.__fileInputMap[k]);
+            const dirtyCount = targets.filter(t => t.isDirty).length;
+            if (dirtyCount > 0) {
+                const label = dirtyCount === 1 ? 'tab has' : 'tabs have';
+                if (!confirm(`${dirtyCount} ${label} unsaved changes. Close anyway?`)) return;
             }
 
-            // Notify requestBuilderComponent to clean its reactive fileSelectedMap
-            window.dispatchEvent(new CustomEvent('freeman:tab-closed', { detail: { tabId } }));
+            targets.forEach(t => {
+                // Clean up file input map
+                if (window.__fileInputMap) {
+                    Object.keys(window.__fileInputMap)
+                        .filter(k => k.startsWith(t.id + '_'))
+                        .forEach(k => delete window.__fileInputMap[k]);
+                }
 
-            Alpine.store('workspace').removeTab(tabId);
+                // Notify requestBuilderComponent to clean its reactive fileSelectedMap
+                window.dispatchEvent(new CustomEvent('freeman:tab-closed', { detail: { tabId: t.id } }));
+            });
+
+            store.removeTabs(targets.map(t => t.id));
+        },
+
+        closeTab(tabId) { this._closeTabs([tabId]); },
+
+        closeAllTabs() {
+            this._closeTabs(this.tabs.map(t => t.id));
+            this.closeTabContextMenu();
+        },
+
+        closeOtherTabs(tabId) {
+            this._closeTabs(this.tabs.filter(t => t.id !== tabId).map(t => t.id));
+            this.closeTabContextMenu();
+        },
+
+        closeTabsToRight(tabId) {
+            const idx = this.tabs.findIndex(t => t.id === tabId);
+            if (idx === -1) return;
+            this._closeTabs(this.tabs.slice(idx + 1).map(t => t.id));
+            this.closeTabContextMenu();
+        },
+
+        closeTabsToLeft(tabId) {
+            const idx = this.tabs.findIndex(t => t.id === tabId);
+            if (idx === -1) return;
+            this._closeTabs(this.tabs.slice(0, idx).map(t => t.id));
+            this.closeTabContextMenu();
+        },
+
+        openTabContextMenu(event, tabId) {
+            this.contextMenu = {
+                open: true,
+                x: Math.min(event.clientX, window.innerWidth - 190),
+                y: event.clientY,
+                tabId,
+            };
+        },
+
+        closeTabContextMenu() {
+            this.contextMenu.open = false;
         },
 
         // ── Init ──────────────────────────────────────────────────────────

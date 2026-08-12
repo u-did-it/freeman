@@ -22,6 +22,7 @@
 
                 <template x-for="tab in tabs" :key="tab.id">
                     <div @click="switchTab(tab.id)"
+                         @contextmenu.prevent="openTabContextMenu($event, tab.id)"
                          class="flex items-center gap-2 px-3 py-2 flex-shrink-0 cursor-pointer select-none group relative"
                          :style="activeTabId === tab.id
                              ? 'background:var(--color-bg-base); border-bottom:2px solid var(--color-brand); color:#fff;'
@@ -64,6 +65,48 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     </svg>
                 </button>
+
+                {{-- Tab context menu --}}
+                <div x-show="contextMenu.open"
+                     x-cloak
+                     @click.outside="closeTabContextMenu()"
+                     @contextmenu.prevent
+                     class="fixed rounded shadow-2xl z-50 py-1 w-44 text-xs"
+                     :style="`top:${contextMenu.y}px; left:${contextMenu.x}px; background:var(--color-bg-elevated); border:1px solid var(--color-border-menu);`">
+
+                    <button @click="closeTab(contextMenu.tabId); closeTabContextMenu()"
+                            class="w-full text-left px-3 py-2 transition-colors" style="color:var(--color-text-primary);"
+                            onmouseover="this.style.background='var(--color-bg-btn)'" onmouseout="this.style.background='transparent'">
+                        Close
+                    </button>
+                    <button @click="closeOtherTabs(contextMenu.tabId)"
+                            :disabled="tabs.length <= 1"
+                            :class="tabs.length <= 1 ? 'opacity-40 cursor-default' : ''"
+                            class="w-full text-left px-3 py-2 transition-colors" style="color:var(--color-text-primary);"
+                            onmouseover="this.style.background='var(--color-bg-btn)'" onmouseout="this.style.background='transparent'">
+                        Close Others
+                    </button>
+                    <button @click="closeTabsToRight(contextMenu.tabId)"
+                            :disabled="tabs.findIndex(t => t.id === contextMenu.tabId) >= tabs.length - 1"
+                            :class="tabs.findIndex(t => t.id === contextMenu.tabId) >= tabs.length - 1 ? 'opacity-40 cursor-default' : ''"
+                            class="w-full text-left px-3 py-2 transition-colors" style="color:var(--color-text-primary);"
+                            onmouseover="this.style.background='var(--color-bg-btn)'" onmouseout="this.style.background='transparent'">
+                        Close to the Right
+                    </button>
+                    <button @click="closeTabsToLeft(contextMenu.tabId)"
+                            :disabled="tabs.findIndex(t => t.id === contextMenu.tabId) <= 0"
+                            :class="tabs.findIndex(t => t.id === contextMenu.tabId) <= 0 ? 'opacity-40 cursor-default' : ''"
+                            class="w-full text-left px-3 py-2 transition-colors" style="color:var(--color-text-primary);"
+                            onmouseover="this.style.background='var(--color-bg-btn)'" onmouseout="this.style.background='transparent'">
+                        Close to the Left
+                    </button>
+                    <div class="my-1" style="border-top:1px solid var(--color-border-subtle);"></div>
+                    <button @click="closeAllTabs()"
+                            class="w-full text-left px-3 py-2 transition-colors" style="color:var(--color-text-primary);"
+                            onmouseover="this.style.background='var(--color-bg-btn)'" onmouseout="this.style.background='transparent'">
+                        Close All
+                    </button>
+                </div>
             </div>
 
             @include('workspace.welcome')

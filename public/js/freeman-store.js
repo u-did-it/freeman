@@ -80,6 +80,19 @@ document.addEventListener('alpine:init', () => {
             this.persistTabs();
         },
 
+        removeTabs(tabIds) {
+            const idSet = new Set(tabIds);
+            if (idSet.size === 0) return;
+            const activeRemoved = idSet.has(this.activeTabId);
+            const oldIdx = this.tabs.findIndex(t => t.id === this.activeTabId);
+            this.tabs = this.tabs.filter(t => !idSet.has(t.id));
+            if (activeRemoved) {
+                const next = this.tabs[oldIdx] ?? this.tabs[oldIdx - 1] ?? this.tabs[0] ?? null;
+                this.activeTabId = next?.id ?? null;
+            }
+            this.persistTabs();
+        },
+
         setLayout(mode) {
             this.layoutMode = mode;
             localStorage.setItem('freeman_layout', mode);
