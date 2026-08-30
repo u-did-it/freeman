@@ -17,7 +17,7 @@ class UpdateEnvironmentRequest extends FormRequest
             'name'              => ['required', 'string', 'max:255'],
             'variables'         => ['nullable', 'array'],
             'variables.*.key'   => ['required', 'string', 'max:255'],
-            'variables.*.value' => ['nullable', 'string', 'max:2048'],
+            'variables.*.value' => ['nullable', 'string'],
             'variables.*.enabled' => ['nullable', 'boolean'],
         ];
     }

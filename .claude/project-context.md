@@ -67,7 +67,7 @@ _This file is auto-imported by CLAUDE.md. Keep it updated after every feature._
 | id | bigint PK | |
 | environment_id | FK → environments | |
 | key | string | e.g. "BASE_URL" |
-| value | string | e.g. "https://api.example.com" |
+| value | text | Unbounded — see DD-017 |
 | enabled | boolean | Default true |
 
 ### `collection_variables`
@@ -76,7 +76,7 @@ _This file is auto-imported by CLAUDE.md. Keep it updated after every feature._
 | id | bigint PK | |
 | collection_id | FK → collections | |
 | key | string | e.g. "BASE_URL" |
-| value | string | e.g. "https://api.example.com" |
+| value | text | Unbounded — see DD-017 |
 | enabled | boolean | Default true |
 
 ### `request_logs` (Request History)
