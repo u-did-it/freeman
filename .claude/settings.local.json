@@ -4,7 +4,9 @@
       "Bash(php artisan:*)",
       "Bash(grep -v \"^\\\\s*$\")",
       "Bash(composer show:*)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(./vendor/bin/pint --test)",
+      "Bash(php artisan *)"
     ]
   }
 }

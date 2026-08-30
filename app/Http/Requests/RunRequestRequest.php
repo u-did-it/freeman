@@ -21,7 +21,7 @@ class RunRequestRequest extends FormRequest
             'environment_id' => ['nullable', 'integer'],
             'headers'           => ['nullable'],   // array from JSON; JSON string when sent as FormData
             'headers.*.key'     => ['nullable', 'string', 'max:255'],
-            'headers.*.value'   => ['nullable', 'string', 'max:1000'],
+            'headers.*.value'   => ['nullable', 'string', 'max:8192'],
             'headers.*.enabled' => ['nullable', 'boolean'],
             'body_type'         => ['nullable', Rule::in(['none', 'raw', 'form-data', 'x-www-form-urlencoded'])],
             'body'              => ['nullable', 'string'],

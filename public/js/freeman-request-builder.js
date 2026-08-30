@@ -240,7 +240,20 @@ document.addEventListener('alpine:init', () => {
                     });
                 }
 
-                tab.response    = await res.json();
+                const data = await res.json();
+                if (!res.ok && data.success === undefined) {
+                    const firstError = data.errors ? Object.values(data.errors)[0]?.[0] : null;
+                    tab.response = {
+                        success: false,
+                        error: firstError || data.message || `Request failed (HTTP ${res.status})`,
+                        status: res.status,
+                        response_time_ms: 0,
+                        response_body: '',
+                        response_headers: {},
+                    };
+                } else {
+                    tab.response = data;
+                }
                 tab.responseTab = 'body';
             } catch (e) {
                 tab.response = { success: false, error: e.message, status: 0, response_time_ms: 0, response_body: '', response_headers: {} };
